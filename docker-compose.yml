@@ -10,21 +10,22 @@ services:
     depends_on:
       - postgres
     environment:
-      PORT: 3000
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/estoque_db
+      PORT: ${PORT:-3000}
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:3000}
+      DATABASE_URL: ${DOCKER_DATABASE_URL}
     ports:
-      - "3000:3000"
+      - "${PORT:-3000}:${PORT:-3000}"
 
   postgres:
     image: postgres:16
     container_name: postgres-estoque
     restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: estoque_db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "5433:5432"
+      - "${POSTGRES_HOST_PORT:-5433}:5432"
     volumes:
       - postgres_estoque_data:/var/lib/postgresql/data
 

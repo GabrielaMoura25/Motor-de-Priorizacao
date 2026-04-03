@@ -1,5 +1,7 @@
 import swaggerJsdoc from "swagger-jsdoc";
 
+const APP_BASE_URL = process.env.APP_BASE_URL ?? `http://localhost:${process.env.PORT ?? 3000}`;
+
 export const openApiSpec = swaggerJsdoc({
     definition: {
         openapi: "3.0.0",
@@ -8,7 +10,7 @@ export const openApiSpec = swaggerJsdoc({
             version: "1.0.0",
             description: "API para gestão de peças e priorização de reposição de estoque.",
         },
-        servers: [{ url: "http://localhost:3000" }],
+        servers: [{ url: APP_BASE_URL }],
         tags: [
             { name: "Health", description: "Monitoramento da aplicação" },
             { name: "Parts", description: "CRUD de peças" },
