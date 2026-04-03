@@ -11,6 +11,12 @@ import { GetRestockPrioritiesUseCase } from "../../application/use-cases/GetRest
 import { PartController } from "./controllers/PartController";
 import { RestockController } from "./controllers/RestockController";
 
+import { validate } from "./middlewares/validate";
+import {
+  createPartSchema,
+  updatePartSchema,
+} from "./validators/partSchemas";
+
 const router = express.Router();
 
 const repository = new PrismaPartRepository();
@@ -30,9 +36,9 @@ const partController = new PartController(
 
 const restockController = new RestockController(restockUseCase);
 
-router.post("/parts", (req, res) => partController.create(req, res));
+router.post("/parts", validate(createPartSchema), (req, res) => partController.create(req, res));
 router.get("/parts", (req, res) => partController.list(req, res));
-router.put("/parts/:id", (req, res) => partController.update(req, res));
+router.put("/parts/:id", validate(updatePartSchema), (req: express.Request<{ id: string }>, res) => partController.update(req, res));
 router.delete("/parts/:id", (req, res) => partController.delete(req, res));
 
 router.get("/restock/priorities", (req, res) =>
