@@ -1,16 +1,18 @@
-import { Request, Response, NextFunction } from "express";
-import { ZodSchema } from "zod";
+import { NextFunction, Request, Response } from "express";
+import { ZodType } from "zod";
 import { AppError } from "../../../shared/errors/AppError";
 
 export const validate =
-  (schema: ZodSchema) =>
-  (req: Request, res: Response, next: NextFunction) => {
-    const result = schema.safeParse(req.body);
+    (schema: ZodType) =>
+    (req: Request, _res: Response, next: NextFunction): void => {
+        const result = schema.safeParse(req.body);
 
-    if (!result.success) {
-      throw new AppError("Validation error", 400, result.error.format());
-    }
+        if (!result.success) {
+            return next(
+                AppError.badRequest("Validation error", result.error.issues)
+            );
+        }
 
-    req.body = result.data;
-    next();
-  };
+        req.body = result.data;
+        next();
+    };

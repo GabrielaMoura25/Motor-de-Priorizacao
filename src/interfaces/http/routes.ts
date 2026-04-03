@@ -1,6 +1,5 @@
-import express from "express";
-
-import { PrismaPartRepository } from "../../infra/repository/PrismaPartRepository";
+import { Router } from "express";
+import { PartRepository } from "../../application/ports/PartRepository";
 
 import { CreatePartUseCase } from "../../application/use-cases/CreatePartUseCase";
 import { GetPartsUseCase } from "../../application/use-cases/GetPartsUseCase";
@@ -10,39 +9,49 @@ import { GetRestockPrioritiesUseCase } from "../../application/use-cases/GetRest
 
 import { PartController } from "./controllers/PartController";
 import { RestockController } from "./controllers/RestockController";
-
 import { validate } from "./middlewares/validate";
-import {
-  createPartSchema,
-  updatePartSchema,
-} from "./validators/partSchemas";
+import { createPartSchema, updatePartSchema } from "./validators/partSchemas";
 
-const router = express.Router();
+/**
+ * Factory que constrói o Router da API injetando o repositório.
+ * Desta forma a camada de rotas não conhece implementações concretas de infra.
+ */
+export function makePartRouter(repository: PartRepository): Router {
+  const router = Router();
 
-const repository = new PrismaPartRepository();
+  router.get("/health", (_req, res) => {
+    res.status(200).json({
+      status: "ok",
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString(),
+    });
+  });
 
-const createUseCase = new CreatePartUseCase(repository);
-const getUseCase = new GetPartsUseCase(repository);
-const updateUseCase = new UpdatePartUseCase(repository);
-const deleteUseCase = new DeletePartUseCase(repository);
-const restockUseCase = new GetRestockPrioritiesUseCase(repository);
+  const partController = new PartController(
+    new CreatePartUseCase(repository),
+    new GetPartsUseCase(repository),
+    new UpdatePartUseCase(repository),
+    new DeletePartUseCase(repository)
+  );
 
-const partController = new PartController(
-  createUseCase,
-  getUseCase,
-  updateUseCase,
-  deleteUseCase
-);
+  const restockController = new RestockController(
+    new GetRestockPrioritiesUseCase(repository)
+  );
 
-const restockController = new RestockController(restockUseCase);
+  router.post("/parts", validate(createPartSchema), (req, res, next) =>
+    partController.create(req, res, next)
+  );
+  router.get("/parts", (req, res, next) => partController.list(req, res, next));
+  router.put("/parts/:id", validate(updatePartSchema), (req, res, next) =>
+    partController.update(req as Parameters<typeof partController.update>[0], res, next)
+  );
+  router.delete("/parts/:id", (req, res, next) =>
+    partController.delete(req as Parameters<typeof partController.delete>[0], res, next)
+  );
 
-router.post("/parts", validate(createPartSchema), (req, res) => partController.create(req, res));
-router.get("/parts", (req, res) => partController.list(req, res));
-router.put("/parts/:id", validate(updatePartSchema), (req: express.Request<{ id: string }>, res) => partController.update(req, res));
-router.delete("/parts/:id", (req, res) => partController.delete(req, res));
+  router.get("/restock/priorities", (req, res, next) =>
+    restockController.getPriorities(req, res, next)
+  );
 
-router.get("/restock/priorities", (req, res) =>
-  restockController.getPriorities(req, res)
-);
-
-export default router;
+  return router;
+}
