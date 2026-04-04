@@ -2,7 +2,7 @@
 
 API backend desenvolvida em Node.js + TypeScript para gerenciar peças em estoque e calcular prioridades de reposição com base em regras de negócio isoladas da camada HTTP.
 
-O projeto foi estruturado com foco em separação de responsabilidades, facilidade de manutenção e clareza arquitetural, mantendo o escopo enxuto para um desafio técnico sem abrir mão de boas práticas.
+O projeto foi estruturado com foco em separação de responsabilidades, facilidade de manutenção e clareza arquitetural, mantendo o escopo enxuto sem abrir mão de boas práticas.
 
 ## Visão geral
 
