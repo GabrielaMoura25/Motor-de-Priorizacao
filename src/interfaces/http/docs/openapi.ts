@@ -58,8 +58,39 @@ export const openApiSpec = swaggerJsdoc({
                 post: {
                     tags: ["Parts"],
                     summary: "Cria uma peça",
+                    requestBody: {
+                        required: true,
+                        content: {
+                            "application/json": {
+                                schema: {
+                                    type: "object",
+                                    required: [
+                                        "name",
+                                        "category",
+                                        "currentStock",
+                                        "minimumStock",
+                                        "averageDailySales",
+                                        "leadTimeDays",
+                                        "unitCost",
+                                        "criticalityLevel",
+                                    ],
+                                    properties: {
+                                        name: { type: "string", example: "Filtro de Óleo X" },
+                                        category: { type: "string", example: "engine" },
+                                        currentStock: { type: "integer", minimum: 0, example: 15 },
+                                        minimumStock: { type: "integer", minimum: 0, example: 20 },
+                                        averageDailySales: { type: "number", minimum: 0, example: 4 },
+                                        leadTimeDays: { type: "integer", minimum: 1, example: 5 },
+                                        unitCost: { type: "number", exclusiveMinimum: 0, example: 18.5 },
+                                        criticalityLevel: { type: "integer", minimum: 1, maximum: 5, example: 3 },
+                                    },
+                                },
+                            },
+                        },
+                    },
                     responses: {
                         "201": { description: "Peça criada" },
+                        "400": { description: "Dados inválidos" },
                     },
                 },
             },
@@ -75,8 +106,29 @@ export const openApiSpec = swaggerJsdoc({
                             schema: { type: "string" },
                         },
                     ],
+                    requestBody: {
+                        required: true,
+                        content: {
+                            "application/json": {
+                                schema: {
+                                    type: "object",
+                                    properties: {
+                                        name: { type: "string", example: "Filtro de Óleo X" },
+                                        category: { type: "string", example: "engine" },
+                                        currentStock: { type: "integer", minimum: 0, example: 15 },
+                                        minimumStock: { type: "integer", minimum: 0, example: 20 },
+                                        averageDailySales: { type: "number", minimum: 0, example: 4 },
+                                        leadTimeDays: { type: "integer", minimum: 1, example: 5 },
+                                        unitCost: { type: "number", exclusiveMinimum: 0, example: 18.5 },
+                                        criticalityLevel: { type: "integer", minimum: 1, maximum: 5, example: 3 },
+                                    },
+                                },
+                            },
+                        },
+                    },
                     responses: {
                         "200": { description: "Peça atualizada" },
+                        "400": { description: "Dados inválidos" },
                         "404": { description: "Peça não encontrada" },
                     },
                 },

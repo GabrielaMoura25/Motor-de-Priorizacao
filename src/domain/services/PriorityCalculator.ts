@@ -10,7 +10,6 @@ type SortablePriority = PriorityResult & {
 export class PriorityCalculator {
     /**
      * Calcula e ordena as peças que precisam de reposição.
-     * Complexidade: O(n log n) — usa Map para lookup O(1) no comparador.
      */
     static calculate(parts: Part[]): PriorityResult[] {
         const enriched = PriorityCalculator.buildSortableResults(parts);
