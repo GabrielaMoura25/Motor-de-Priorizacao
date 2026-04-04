@@ -68,7 +68,6 @@ O projeto segue uma divisão inspirada em Clean Architecture / arquitetura em ca
 - a aplicação depende da abstração `PartRepository`, não da implementação concreta
 - a implementação concreta é injetada no composition root
 - o `id` da peça é gerado pelo banco via Prisma/PostgreSQL
-- a combinação `name + category` **não** possui restrição de unicidade, conforme alinhamento final da regra de negócio
 
 ## Regras de negócio de priorização
 
@@ -110,6 +109,19 @@ DOCKER_DATABASE_URL=postgresql://postgres:postgres@postgres:5432/estoque_db
 
 - `DATABASE_URL` é usada quando a API roda localmente na máquina host
 - `DOCKER_DATABASE_URL` é usada quando a API roda dentro do container `app`, apontando para o serviço `postgres` do Compose
+
+## Pré-requisitos
+
+- Node.js >= 18
+- Docker e Docker Compose
+- Git
+
+## Clonando o repositório
+
+```bash
+git clone https://github.com/GabrielaMoura25/Motor-de-Priorizacao.git
+cd Motor-de-Priorizacao
+```
 
 ## Como rodar o projeto
 
@@ -250,9 +262,47 @@ Resposta:
 
 `PUT /parts/:id`
 
+Todos os campos são opcionais. Apenas os campos enviados serão atualizados.
+
+Exemplo de body:
+
+```json
+{
+  "currentStock": 30,
+  "criticalityLevel": 5
+}
+```
+
+Resposta (200):
+
+```json
+{
+  "id": "uuid-1",
+  "name": "Filtro de Óleo X",
+  "category": "engine",
+  "currentStock": 30,
+  "minimumStock": 20,
+  "averageDailySales": 4,
+  "leadTimeDays": 5,
+  "unitCost": 18.5,
+  "criticalityLevel": 5
+}
+```
+
 ### Remover peça
 
 `DELETE /parts/:id`
+
+Retorna `204 No Content` em caso de sucesso, sem corpo na resposta.
+
+Caso a peça não exista, retorna `404`:
+
+```json
+{
+  "status": 404,
+  "message": "Part not found"
+}
+```
 
 ### Obter prioridades de reposição
 
@@ -363,17 +413,14 @@ npx prisma migrate dev
 
 ## Considerações finais
 
-Este projeto busca equilibrar simplicidade e qualidade de implementação:
+O projeto foi desenvolvido com atenção a um ponto que considero central em qualquer base de código: **clareza intencional**. Cada decisão arquitetural tem uma razão que pode ser seguida pela estrutura de pastas, pelos contratos definidos e pela ausência de acoplamento direto entre as camadas.
 
-- sem overengineering desnecessário
-- com separação clara de responsabilidades
-- com pontos de extensão para evolução futura
-- com documentação suficiente para execução e avaliação técnica
+A regra de priorização — que é o coração do sistema — está completamente isolada do Express e do Prisma. Isso significa que ela pode ser testada, modificada e evoluída sem tocar em infraestrutura. É esse tipo de separação que faz um projeto crescer sem se tornar difícil de manter.
 
-Melhorias futuras possíveis:
+### O que pode evoluir naturalmente
 
-- testes de integração HTTP
-- autenticação/autorização
-- observabilidade com métricas
-- pipeline CI para build/test
-- deploy containerizado em ambiente cloud
+- **testes de integração HTTP** — cobrir os endpoints com supertest, complementando os testes unitários existentes
+- **autenticação** — JWT ou API key para proteger os endpoints de escrita
+- **observabilidade** — métricas de latência e erros com Prometheus ou similar
+- **pipeline CI** — Github Actions para rodar build, lint e testes a cada push
+- **deploy** — a imagem Docker já está pronta para rodar em qualquer ambiente cloud com mínima configuração adicional
